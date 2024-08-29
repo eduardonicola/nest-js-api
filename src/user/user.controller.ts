@@ -8,11 +8,12 @@ import {
   Delete,
   HttpCode,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import { UserAuthMiddleware } from './auth.middleware';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -22,7 +23,15 @@ export class UserController {
     return this.userService.create(dto);
   }
 
+  @Post('login')
+  async login(
+    @Body() body: { email: string; password: string },
+  ): Promise<{ accessToken: string }> {
+    return this.userService.login(body.email, body.password);
+  }
+
   @Get()
+  @UseGuards(UserAuthMiddleware)
   findAll() {
     return this.userService.findAll();
   }
